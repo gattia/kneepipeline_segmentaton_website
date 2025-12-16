@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends
 from datetime import datetime
 from typing import Literal
-from pydantic import BaseModel
+
 import redis
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 
-from ..config import get_settings, Settings
-
+from ..config import Settings, get_settings
 
 router = APIRouter()
 
@@ -28,7 +28,7 @@ def get_redis_client(settings: Settings = Depends(get_settings)) -> redis.Redis:
 async def health_check(redis_client: redis.Redis = Depends(get_redis_client)):
     """Check health of the application and its dependencies."""
     error_msg = None
-    
+
     try:
         # Test Redis connection
         redis_client.ping()
@@ -39,13 +39,13 @@ async def health_check(redis_client: redis.Redis = Depends(get_redis_client)):
     except Exception as e:
         redis_status = "disconnected"
         error_msg = f"Redis error: {str(e)}"
-    
+
     # TODO: Check Celery worker status (inspect active workers)
     # For Phase 1, we just report as available if Redis is connected
     worker_status = "available" if redis_status == "connected" else "unavailable"
-    
+
     status = "healthy" if redis_status == "connected" else "unhealthy"
-    
+
     return HealthResponse(
         status=status,
         redis=redis_status,

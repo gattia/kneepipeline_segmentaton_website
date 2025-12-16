@@ -1,8 +1,9 @@
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
 from .routes import health
@@ -13,7 +14,7 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
     # Startup: create directories
     settings = get_settings()
-    for dir_path in [settings.upload_dir, settings.temp_dir, 
+    for dir_path in [settings.upload_dir, settings.temp_dir,
                      settings.log_dir, settings.results_dir]:
         dir_path.mkdir(parents=True, exist_ok=True)
     yield

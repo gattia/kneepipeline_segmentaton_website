@@ -17,6 +17,7 @@ select = [
 ]
 ignore = [
     "E501",  # line too long (handled by formatter)
+    "B008",  # Do not perform function call in argument defaults (FastAPI Depends pattern)
 ]
 
 [tool.ruff.per-file-ignores]
