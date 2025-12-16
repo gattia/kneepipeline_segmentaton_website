@@ -8,18 +8,40 @@ Stage 1 builds a complete end-to-end prototype with **dummy processing**. Users 
 
 ---
 
+## Current Progress
+
+| Stage | Status | Tests | Description |
+|-------|--------|-------|-------------|
+| **1.1** | ✅ Complete | 23 passing | Project scaffolding, FastAPI app, health endpoint |
+| **1.2** | ✅ Complete | 35 passing | Pydantic schemas, Job model, services |
+| **1.3** | ⬜ Not Started | - | Celery configuration, tasks, dummy worker |
+| **1.4** | ⬜ Not Started | - | Upload, status, download, stats routes |
+| **1.5** | ⬜ Not Started | - | Frontend UI with FilePond |
+| **1.6** | ⬜ Not Started | - | Docker, docker-compose, deployment |
+
+**Total Tests**: 58 passing (as of Stage 1.2)
+
+### Quick Verification
+
+```bash
+make verify   # Run lint + all tests
+make test     # Run all tests
+```
+
+---
+
 ## Sub-Stages
 
 Execute these in order. Each is designed to be a focused task for an AI assistant.
 
-| Stage | Name | Time | Verification |
-|-------|------|------|--------------|
-| **1.1** | [Project Scaffolding](./STAGE_1.1_PROJECT_SCAFFOLDING.md) | ~30 min | `pytest -m stage_1_1` |
-| **1.2** | [Models & Services](./STAGE_1.2_MODELS_AND_SERVICES.md) | ~30 min | `pytest -m stage_1_2` |
-| **1.3** | [Redis + Celery](./STAGE_1.3_REDIS_AND_CELERY.md) | ~30 min | `pytest -m stage_1_3` |
-| **1.4** | [API Routes](./STAGE_1.4_API_ROUTES.md) | ~45 min | `pytest -m stage_1_4` |
-| **1.5** | [Frontend](./STAGE_1.5_FRONTEND.md) | ~45 min | `pytest -m stage_1_5` |
-| **1.6** | [Docker & Deployment](./STAGE_1.6_DOCKER_AND_DEPLOYMENT.md) | ~45 min | `pytest -m stage_1_6` |
+| Stage | Name | Time | Verification | Completion Report |
+|-------|------|------|--------------|-------------------|
+| **1.1** | [Project Scaffolding](./STAGE_1.1_PROJECT_SCAFFOLDING.md) | ~30 min | `pytest -m stage_1_1` | [COMPLETED](./STAGE_1.1_COMPLETED.md) |
+| **1.2** | [Models & Services](./STAGE_1.2_MODELS_AND_SERVICES.md) | ~45 min | `pytest -m stage_1_2` | [COMPLETED](./STAGE_1.2_COMPLETED.md) |
+| **1.3** | [Redis + Celery](./STAGE_1.3_REDIS_AND_CELERY.md) | ~30 min | `pytest -m stage_1_3` | - |
+| **1.4** | [API Routes](./STAGE_1.4_API_ROUTES.md) | ~45 min | `pytest -m stage_1_4` | - |
+| **1.5** | [Frontend](./STAGE_1.5_FRONTEND.md) | ~45 min | `pytest -m stage_1_5` | - |
+| **1.6** | [Docker & Deployment](./STAGE_1.6_DOCKER_AND_DEPLOYMENT.md) | ~45 min | `pytest -m stage_1_6` | - |
 
 ---
 
