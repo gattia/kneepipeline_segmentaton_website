@@ -14,7 +14,7 @@ Execute these in order. Each is designed to be a focused task for an AI assistan
 
 | Stage | Name | Time | Description |
 |-------|------|------|-------------|
-| **1.1** | [Project Scaffolding](./STAGE_1.1_PROJECT_SCAFFOLDING.md) | ~30 min | GCP VM, directory structure, FastAPI basics |
+| **1.1** | [Project Scaffolding](./STAGE_1.1_PROJECT_SCAFFOLDING.md) | ~30 min | Directory structure, requirements, FastAPI basics |
 | **1.2** | [Models & Services](./STAGE_1.2_MODELS_AND_SERVICES.md) | ~30 min | Pydantic schemas, Job model, service layer |
 | **1.3** | [Redis + Celery](./STAGE_1.3_REDIS_AND_CELERY.md) | ~30 min | Job queue, dummy worker, task execution |
 | **1.4** | [API Routes](./STAGE_1.4_API_ROUTES.md) | ~45 min | All REST endpoints wired up |
@@ -25,12 +25,14 @@ Execute these in order. Each is designed to be a focused task for an AI assistan
 
 ## Prerequisites
 
-Before starting Stage 1.1:
+**Stage 0 must be complete.** See [STAGE_0_DEV_ENVIRONMENT.md](../STAGE_0_DEV_ENVIRONMENT.md).
 
-- GCP account with a project created
-- Ability to create VM instances (no GPU quota needed yet)
-- SSH key configured for GCP access
-- Git installed locally
+You should have:
+- ✅ GCP VM running (Debian 12)
+- ✅ Miniconda installed with `kneepipeline` environment (Python 3.10)
+- ✅ Docker running with Redis container on port 6379
+- ✅ Build tools installed (gcc, curl, etc.)
+- ✅ Git installed
 
 ---
 

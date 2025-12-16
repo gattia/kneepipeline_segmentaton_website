@@ -65,28 +65,24 @@ ruff==0.1.11
 
 ### 1.3 Environment Setup Commands
 
+> **Note**: If Stage 0 (Dev Environment) is complete, skip to step 1. Redis should already be running.
+
 ```bash
 # 1. Create project directory structure
 mkdir -p backend/{routes,services,workers,models}
 mkdir -p frontend/{css,js,assets}
-mkdir -p data/{uploads,temp,logs}
+mkdir -p data/{uploads,temp,logs,results}
 mkdir -p tests
+mkdir -p .github/workflows
 
-# 2. Set up Python virtual environment
-cd backend
-python -m venv venv
-source venv/bin/activate  # or `venv\Scripts\activate` on Windows
-pip install -r requirements.txt
+# 2. Activate conda environment and install dependencies
+conda activate kneepipeline
+cd ~/programming/kneepipeline_segmentaton_website
+pip install -r backend/requirements.txt
 
-# 3. Start Redis (choose one)
-# Option A: Docker (recommended)
-docker run -d --name redis -p 6379:6379 redis:7-alpine
-
-# Option B: macOS
-brew install redis && brew services start redis
-
-# Option C: Ubuntu
-sudo apt install redis-server && sudo systemctl start redis
+# 3. Verify Redis is running (started in Stage 0)
+docker ps | grep redis
+docker exec redis redis-cli ping  # Should return PONG
 ```
 
 ---
@@ -2119,18 +2115,18 @@ def test_stats_endpoint(test_client):
 
 1. **Start Services**:
    ```bash
-   # Terminal 1: Redis
-   docker run -d --name redis -p 6379:6379 redis:7-alpine
+   # Ensure Redis is running (from Stage 0)
+   docker start redis
    
-   # Terminal 2: FastAPI
-   cd backend
-   source venv/bin/activate
-   uvicorn main:app --reload --port 8000
+   # Terminal 1: FastAPI
+   conda activate kneepipeline
+   cd ~/programming/kneepipeline_segmentaton_website
+   uvicorn backend.main:app --reload --port 8000
    
-   # Terminal 3: Celery Worker
-   cd backend
-   source venv/bin/activate
-   celery -A workers.celery_app worker --loglevel=info --concurrency=1
+   # Terminal 2: Celery Worker
+   conda activate kneepipeline
+   cd ~/programming/kneepipeline_segmentaton_website
+   celery -A backend.workers.celery_app worker --loglevel=info --concurrency=1
    ```
 
 2. **Test Upload Flow**:
@@ -2348,25 +2344,28 @@ addopts = "-v --tb=short"
 ## Development Commands Reference
 
 ```bash
-# Start development environment
-docker run -d --name redis -p 6379:6379 redis:7-alpine
-cd backend && source venv/bin/activate
+# Start development environment (Redis should already be running from Stage 0)
+docker start redis  # If not running
+conda activate kneepipeline
+cd ~/programming/kneepipeline_segmentaton_website
 
 # Run FastAPI (development mode with auto-reload)
-uvicorn main:app --reload --port 8000
+uvicorn backend.main:app --reload --port 8000
 
 # Run Celery worker (separate terminal)
-celery -A workers.celery_app worker --loglevel=info --concurrency=1
+conda activate kneepipeline
+cd ~/programming/kneepipeline_segmentaton_website
+celery -A backend.workers.celery_app worker --loglevel=info --concurrency=1
 
 # Run tests
 pytest tests/ -v
 
 # Monitor Celery tasks
-celery -A workers.celery_app flower  # Optional: Flower monitoring UI
+celery -A backend.workers.celery_app flower  # Optional: Flower monitoring UI
 
-# Check Redis
-redis-cli ping
-redis-cli HGETALL jobs
+# Check Redis (via Docker)
+docker exec redis redis-cli ping
+docker exec redis redis-cli HGETALL jobs
 
 # View logs
 tail -f data/logs/app.log

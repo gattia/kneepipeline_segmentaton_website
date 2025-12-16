@@ -1034,29 +1034,20 @@ kneepipeline_segmentation_website/
 ### Development (Local)
 
 ```bash
-# 1. Start Redis (choose one option)
-# Option A: Docker (recommended)
-docker run -d --name redis -p 6379:6379 redis:7-alpine
-
-# Option B: Local install (macOS)
-brew install redis
-brew services start redis
-
-# Option C: Local install (Ubuntu)
-sudo apt install redis-server
-sudo systemctl start redis
+# 1. Start Redis (via Docker - should already be running from Stage 0)
+docker start redis  # If not already running
+docker exec redis redis-cli ping  # Verify with PONG
 
 # 2. Backend - Terminal 1
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+conda activate kneepipeline
+cd ~/programming/kneepipeline_segmentaton_website
+pip install -r backend/requirements.txt  # First time only
+uvicorn backend.main:app --reload --port 8000
 
 # 3. Celery Worker - Terminal 2
-cd backend
-source venv/bin/activate
-celery -A workers.celery_app worker --loglevel=info --concurrency=1
+conda activate kneepipeline
+cd ~/programming/kneepipeline_segmentaton_website
+celery -A backend.workers.celery_app worker --loglevel=info --concurrency=1
 
 # Frontend is served by FastAPI from frontend/ directory
 ```
@@ -1172,8 +1163,8 @@ Tests are organized into three levels:
 docker run -d --name redis -p 6379:6379 redis:7-alpine
 
 # Run all tests
-cd backend
-source venv/bin/activate
+conda activate kneepipeline
+cd ~/programming/kneepipeline_segmentaton_website
 pytest tests/ -v
 
 # Run with coverage
@@ -1182,8 +1173,7 @@ pytest tests/ --cov=backend --cov-report=html
 # Run specific test file
 pytest tests/test_upload.py -v
 
-# Run linter
-pip install ruff
+# Run linter (already installed via requirements.txt)
 ruff check backend/ tests/
 ```
 
