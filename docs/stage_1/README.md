@@ -12,14 +12,72 @@ Stage 1 builds a complete end-to-end prototype with **dummy processing**. Users 
 
 Execute these in order. Each is designed to be a focused task for an AI assistant.
 
-| Stage | Name | Time | Description |
-|-------|------|------|-------------|
-| **1.1** | [Project Scaffolding](./STAGE_1.1_PROJECT_SCAFFOLDING.md) | ~30 min | Directory structure, requirements, FastAPI basics |
-| **1.2** | [Models & Services](./STAGE_1.2_MODELS_AND_SERVICES.md) | ~30 min | Pydantic schemas, Job model, service layer |
-| **1.3** | [Redis + Celery](./STAGE_1.3_REDIS_AND_CELERY.md) | ~30 min | Job queue, dummy worker, task execution |
-| **1.4** | [API Routes](./STAGE_1.4_API_ROUTES.md) | ~45 min | All REST endpoints wired up |
-| **1.5** | [Frontend](./STAGE_1.5_FRONTEND.md) | ~45 min | Complete web UI |
-| **1.6** | [Docker & Deployment](./STAGE_1.6_DOCKER_AND_DEPLOYMENT.md) | ~45 min | Containerization, GCP deployment, CI/CD |
+| Stage | Name | Time | Verification |
+|-------|------|------|--------------|
+| **1.1** | [Project Scaffolding](./STAGE_1.1_PROJECT_SCAFFOLDING.md) | ~30 min | `pytest -m stage_1_1` |
+| **1.2** | [Models & Services](./STAGE_1.2_MODELS_AND_SERVICES.md) | ~30 min | `pytest -m stage_1_2` |
+| **1.3** | [Redis + Celery](./STAGE_1.3_REDIS_AND_CELERY.md) | ~30 min | `pytest -m stage_1_3` |
+| **1.4** | [API Routes](./STAGE_1.4_API_ROUTES.md) | ~45 min | `pytest -m stage_1_4` |
+| **1.5** | [Frontend](./STAGE_1.5_FRONTEND.md) | ~45 min | `pytest -m stage_1_5` |
+| **1.6** | [Docker & Deployment](./STAGE_1.6_DOCKER_AND_DEPLOYMENT.md) | ~45 min | `pytest -m stage_1_6` |
+
+---
+
+## Verification with pytest
+
+Each sub-stage has pytest tests that verify completion. Tests are marked with stage identifiers.
+
+### How to Verify a Stage
+
+```bash
+# Activate the conda environment first
+conda activate kneepipeline
+cd ~/programming/kneepipeline_segmentaton_website
+
+# Verify a specific stage
+pytest -m stage_1_1 -v
+
+# Run all Stage 1 tests
+pytest -m "stage_1_1 or stage_1_2 or stage_1_3 or stage_1_4 or stage_1_5 or stage_1_6" -v
+
+# Run all tests
+pytest -v
+```
+
+### Completion Criteria
+
+- **All tests pass** = Stage is complete
+- **Any test fails** = Stage is incomplete, fix the failing tests
+
+### Test Files
+
+Tests are organized in the `tests/` directory:
+
+```
+tests/
+├── __init__.py
+├── conftest.py              # Shared fixtures
+├── test_stage_1_1.py        # Project scaffolding
+├── test_stage_1_2.py        # Models & services
+├── test_stage_1_3.py        # Redis + Celery
+├── test_stage_1_4.py        # API routes
+├── test_stage_1_5.py        # Frontend
+└── test_stage_1_6.py        # Docker & deployment
+```
+
+### pytest Markers (in pyproject.toml)
+
+```toml
+[tool.pytest.ini_options]
+markers = [
+    "stage_1_1: Stage 1.1 - Project Scaffolding",
+    "stage_1_2: Stage 1.2 - Models & Services",
+    "stage_1_3: Stage 1.3 - Redis + Celery",
+    "stage_1_4: Stage 1.4 - API Routes",
+    "stage_1_5: Stage 1.5 - Frontend",
+    "stage_1_6: Stage 1.6 - Docker & Deployment",
+]
+```
 
 ---
 

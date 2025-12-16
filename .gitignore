@@ -38,3 +38,9 @@ htmlcov/
 # Logs
 *.log
 
+# Data directories (runtime data)
+data/uploads/
+data/temp/
+data/logs/
+data/results/
+
