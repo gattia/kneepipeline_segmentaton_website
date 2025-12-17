@@ -25,6 +25,24 @@ body {
     color: var(--text-color);
     line-height: 1.6;
     min-height: 100vh;
+    position: relative;
+}
+
+/* Background image with overlay for readability */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/website_image.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 1;  /* Adjust this value: 0.1 = very faint, 0.3 = more visible */
+    z-index: -1;
+    pointer-events: none;
 }
 
 .container {
@@ -42,10 +60,13 @@ header {
 header h1 {
     font-size: 1.75rem;
     margin-bottom: 0.5rem;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 header .subtitle {
-    color: var(--text-muted);
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* Sections */
@@ -301,8 +322,9 @@ header .subtitle {
 footer {
     text-align: center;
     padding: 1rem;
-    color: var(--text-muted);
+    color: white;
     font-size: 0.9rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .stats {
