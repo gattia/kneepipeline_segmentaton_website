@@ -3,6 +3,8 @@
 **Completed**: December 16, 2025  
 **Commit**: `bb2765e` - "Stage 1.1: Project scaffolding and health endpoint"
 
+**Updated**: December 16, 2025 - Refactored to centralize `HealthResponse` schema and add `gpu` field
+
 ---
 
 ## Summary
@@ -56,10 +58,12 @@ kneepipeline_segmentaton_website/
 |------|---------|
 | `backend/main.py` | FastAPI app with lifespan, CORS middleware, mounts frontend |
 | `backend/config.py` | `Settings` class using pydantic-settings, loads from `.env` |
-| `backend/routes/health.py` | `/health` endpoint with Redis connectivity check |
+| `backend/routes/health.py` | `/health` endpoint with Redis connectivity check (imports from centralized schemas/services) |
+| `backend/models/schemas.py` | All Pydantic schemas including `HealthResponse` |
+| `backend/services/job_service.py` | Redis client helper used by health endpoint and other routes |
 | `backend/requirements.txt` | FastAPI, Celery, Redis, SimpleITK, pytest, ruff |
 | `pyproject.toml` | pytest markers for each stage, ruff linting rules |
-| `tests/test_stage_1_1.py` | 23 tests verifying structure, deps, and health endpoint |
+| `tests/test_stage_1_1.py` | 24 tests verifying structure, deps, and health endpoint |
 
 ### Dependencies Installed
 
@@ -73,7 +77,7 @@ kneepipeline_segmentaton_website/
 
 ## Verification
 
-All 23 Stage 1.1 tests pass:
+All 24 Stage 1.1 tests pass:
 
 ```bash
 conda activate kneepipeline
@@ -89,11 +93,14 @@ uvicorn backend.main:app --reload --port 8000
 
 # Test health endpoint (in another terminal)
 curl http://localhost:8000/health
-# Returns: {"status":"healthy","redis":"connected","worker":"available","timestamp":"...","error":null}
+# Returns: {"status":"healthy","redis":"connected","worker":"available","gpu":"unavailable","timestamp":"...","error":null}
 
 # View API docs
 open http://localhost:8000/docs
 ```
+
+> **Note**: The `gpu` field returns `"unavailable"` during Phase 1 (dummy processing). 
+> It will be updated to check actual GPU availability when the real pipeline is integrated in Phase 3.
 
 ---
 
@@ -127,6 +134,7 @@ Stage 1.2 creates:
 
 1. **Pydantic Schemas** (`backend/models/schemas.py`)
    - Request/response models: UploadOptions, StatusQueued, StatusProcessing, StatusComplete, StatusError, StatsResponse
+   - Note: `HealthResponse` is also in this file (moved from health.py for consistency)
 
 2. **Job Model** (`backend/models/job.py`)
    - Job dataclass with Redis persistence methods
@@ -138,7 +146,7 @@ Stage 1.2 creates:
    - Find medical images using SimpleITK
 
 4. **Job Service** (`backend/services/job_service.py`)
-   - Redis client helper
+   - Redis client helper (used by health endpoint and other routes)
    - Queue position and wait time calculations
 
 5. **Statistics Service** (`backend/services/statistics.py`)
@@ -155,3 +163,11 @@ Refer to [STAGE_1_DETAILED_PLAN.md](../STAGE_1_DETAILED_PLAN.md) for complete co
 - The `backend/main.py` only includes the health router. More routers will be added as routes are created.
 - The frontend `index.html` is a placeholder. Full frontend comes in Stage 1.5.
 - All code snippets needed are in `docs/STAGE_1_DETAILED_PLAN.md`.
+
+### Code Organization Notes
+
+- **`HealthResponse`** schema is in `backend/models/schemas.py` (centralized with all other schemas)
+- **`get_redis_client()`** function is in `backend/services/job_service.py` (single source of truth, imported by health.py)
+- **`gpu` field** in health response returns `"unavailable"` during Phase 1; will be updated to check actual GPU in Phase 3
+
+

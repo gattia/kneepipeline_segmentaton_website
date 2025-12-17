@@ -1,0 +1,81 @@
+# Docker Compose for Knee MRI Analysis Pipeline
+# Stage 1: Development/Production deployment with HTTPS via Caddy
+
+services:
+  # Caddy reverse proxy with automatic HTTPS
+  caddy:
+    image: caddy:2-alpine
+    container_name: knee-pipeline-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: knee-pipeline-redis
+    # Redis only accessible within Docker network (not exposed externally)
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: knee-pipeline-web
+    # Web only accessible via Caddy (not exposed externally)
+    expose:
+      - "8000"
+    volumes:
+      - app_data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DEBUG=false
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: knee-pipeline-worker
+    command: celery -A backend.workers.celery_app worker --loglevel=info --concurrency=1
+    volumes:
+      - app_data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+    name: knee-pipeline-redis-data
+  app_data:
+    name: knee-pipeline-app-data
+  caddy_data:
+    name: knee-pipeline-caddy-data
+  caddy_config:
+    name: knee-pipeline-caddy-config

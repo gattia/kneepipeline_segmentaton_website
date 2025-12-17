@@ -32,6 +32,10 @@ markers = [
     "stage_1_4: Stage 1.4 - API Routes",
     "stage_1_5: Stage 1.5 - Frontend",
     "stage_1_6: Stage 1.6 - Docker & Deployment",
+    "stage_1_7: Stage 1.7 - HTTPS with Caddy",
+    "slow: Slow tests (e.g., Docker builds)",
 ]
 asyncio_mode = "auto"
 addopts = "-v --tb=short"
+
+

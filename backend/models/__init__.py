@@ -3,6 +3,7 @@ Models package - Pydantic schemas and Job dataclass.
 """
 from .job import Job
 from .schemas import (
+    HealthResponse,
     StatsResponse,
     StatusComplete,
     StatusError,
@@ -20,5 +21,6 @@ __all__ = [
     "StatusComplete",
     "StatusError",
     "StatsResponse",
+    "HealthResponse",
     "Job",
 ]

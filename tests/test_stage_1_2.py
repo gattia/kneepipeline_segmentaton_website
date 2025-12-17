@@ -26,6 +26,7 @@ class TestPydanticSchemas:
             UploadOptions,
             UploadResponse,
         )
+
         assert UploadOptions
         assert UploadResponse
         assert StatusQueued
@@ -69,7 +70,7 @@ class TestPydanticSchemas:
             status="queued",
             queue_position=1,
             estimated_wait_seconds=240,
-            message="Test message"
+            message="Test message",
         )
         assert response.job_id == "test-123"
         assert response.status == "queued"
@@ -80,10 +81,7 @@ class TestPydanticSchemas:
         from backend.models.schemas import StatusQueued
 
         status = StatusQueued(
-            job_id="test-123",
-            status="queued",
-            queue_position=2,
-            estimated_wait_seconds=480
+            job_id="test-123", status="queued", queue_position=2, estimated_wait_seconds=480
         )
         assert status.status == "queued"
 
@@ -99,7 +97,7 @@ class TestPydanticSchemas:
             total_steps=4,
             step_name="Creating meshes",
             elapsed_seconds=60,
-            estimated_remaining_seconds=90
+            estimated_remaining_seconds=90,
         )
         assert status.progress_percent == 45
         assert status.step_name == "Creating meshes"
@@ -113,7 +111,7 @@ class TestPydanticSchemas:
             status="complete",
             download_url="/download/test-123",
             result_size_bytes=25000000,
-            processing_time_seconds=180
+            processing_time_seconds=180,
         )
         assert "/download/" in status.download_url
 
@@ -125,7 +123,7 @@ class TestPydanticSchemas:
             job_id="test-123",
             status="error",
             error_message="Invalid file format",
-            error_code="INVALID_FORMAT"
+            error_code="INVALID_FORMAT",
         )
         assert status.error_code == "INVALID_FORMAT"
 
@@ -139,7 +137,7 @@ class TestPydanticSchemas:
             unique_users=150,
             average_processing_time_seconds=240,
             jobs_in_queue=3,
-            uptime_hours=168.5
+            uptime_hours=168.5,
         )
         assert stats.total_jobs_processed == 1000
 
@@ -150,6 +148,7 @@ class TestJobModel:
     def test_job_importable(self):
         """Job class should be importable."""
         from backend.models.job import Job
+
         assert Job
 
     def test_job_creation(self):
@@ -160,7 +159,7 @@ class TestJobModel:
             id="test-job-123",
             input_filename="test.nii.gz",
             input_path="/data/uploads/test.nii.gz",
-            options={"segmentation_model": "nnunet_fullres"}
+            options={"segmentation_model": "nnunet_fullres"},
         )
         assert job.id == "test-job-123"
         assert job.status == "queued"  # Default
@@ -175,7 +174,7 @@ class TestJobModel:
             id="test-job-123",
             input_filename="test.nii.gz",
             input_path="/data/uploads/test.nii.gz",
-            options={}
+            options={},
         )
         data = job.to_dict()
         assert isinstance(data, dict)
@@ -191,7 +190,7 @@ class TestJobModel:
             id="redis-test-123",
             input_filename="test.nii.gz",
             input_path="/data/uploads/test.nii.gz",
-            options={"model": "test"}
+            options={"model": "test"},
         )
         job.save(redis_client)
 
@@ -218,7 +217,7 @@ class TestJobModel:
                 id=f"queue-test-{i}",
                 input_filename=f"test{i}.nii.gz",
                 input_path=f"/data/uploads/test{i}.nii.gz",
-                options={}
+                options={},
             )
             job.save(redis_client)
             time.sleep(0.01)  # Ensure different timestamps
@@ -240,7 +239,7 @@ class TestJobModel:
             id="length-test-job",
             input_filename="test.nii.gz",
             input_path="/data/uploads/test.nii.gz",
-            options={}
+            options={},
         )
         job.save(redis_client)
 
@@ -256,7 +255,7 @@ class TestJobModel:
             id="delete-test-job",
             input_filename="test.nii.gz",
             input_path="/data/uploads/test.nii.gz",
-            options={}
+            options={},
         )
         job.save(redis_client)
 
@@ -278,6 +277,7 @@ class TestFileHandlerService:
         from backend.services.file_handler import (
             validate_and_prepare_upload,
         )
+
         assert validate_and_prepare_upload
 
     def test_reject_invalid_extension(self, temp_dir):
@@ -291,7 +291,9 @@ class TestFileHandlerService:
         with pytest.raises(ValueError) as exc_info:
             validate_and_prepare_upload(invalid_file, temp_dir / "extracted")
 
-        assert "extension" in str(exc_info.value).lower() or "invalid" in str(exc_info.value).lower()
+        assert (
+            "extension" in str(exc_info.value).lower() or "invalid" in str(exc_info.value).lower()
+        )
 
     def test_reject_invalid_zip(self, temp_dir):
         """Should reject invalid/corrupted zip files."""
@@ -312,7 +314,7 @@ class TestFileHandlerService:
 
         # Create a zip with non-medical files
         zip_path = temp_dir / "empty.zip"
-        with zipfile.ZipFile(zip_path, 'w') as zf:
+        with zipfile.ZipFile(zip_path, "w") as zf:
             zf.writestr("readme.txt", "This is not a medical image")
 
         with pytest.raises(ValueError) as exc_info:
@@ -330,6 +332,7 @@ class TestJobService:
             get_estimated_wait,
             get_redis_client,
         )
+
         assert get_redis_client
         assert get_estimated_wait
 
@@ -388,6 +391,7 @@ class TestStatisticsService:
             increment_processed_count,
             track_user_email,
         )
+
         assert get_statistics
         assert increment_processed_count
         assert track_user_email
@@ -472,6 +476,7 @@ class TestModelsInit:
     def test_models_package_structure(self):
         """Models package should be importable."""
         from backend import models
+
         assert models
 
     def test_models_exports(self):
@@ -480,6 +485,7 @@ class TestModelsInit:
             Job,
             UploadOptions,
         )
+
         assert UploadOptions
         assert Job
 
@@ -490,6 +496,7 @@ class TestServicesInit:
     def test_services_package_structure(self):
         """Services package should be importable."""
         from backend import services
+
         assert services
 
     def test_services_exports(self):
@@ -498,5 +505,6 @@ class TestServicesInit:
             get_statistics,
             validate_and_prepare_upload,
         )
+
         assert validate_and_prepare_upload
         assert get_statistics

@@ -1,27 +1,12 @@
 from datetime import datetime
-from typing import Literal
 
 import redis
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 
-from ..config import Settings, get_settings
+from ..models.schemas import HealthResponse
+from ..services.job_service import get_redis_client
 
 router = APIRouter()
-
-
-class HealthResponse(BaseModel):
-    """Health check response model."""
-    status: Literal["healthy", "unhealthy"]
-    redis: Literal["connected", "disconnected"]
-    worker: Literal["available", "unavailable"]
-    timestamp: datetime
-    error: str | None = None
-
-
-def get_redis_client(settings: Settings = Depends(get_settings)) -> redis.Redis:
-    """Get Redis client instance."""
-    return redis.from_url(settings.redis_url, decode_responses=True)
 
 
 @router.get("/health", response_model=HealthResponse)
@@ -44,12 +29,17 @@ async def health_check(redis_client: redis.Redis = Depends(get_redis_client)):
     # For Phase 1, we just report as available if Redis is connected
     worker_status = "available" if redis_status == "connected" else "unavailable"
 
+    # TODO: Check GPU availability (Phase 3 - real pipeline integration)
+    # For Phase 1, we report as unavailable since we're using dummy processing
+    gpu_status = "unavailable"
+
     status = "healthy" if redis_status == "connected" else "unhealthy"
 
     return HealthResponse(
         status=status,
         redis=redis_status,
         worker=worker_status,
+        gpu=gpu_status,
         timestamp=datetime.utcnow(),
-        error=error_msg
+        error=error_msg,
     )

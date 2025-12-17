@@ -1,0 +1,12 @@
+# Caddyfile for Knee MRI Analysis Pipeline
+# Caddy automatically obtains and renews SSL certificates from Let's Encrypt
+
+# Main domain - reverse proxy to FastAPI
+openmsk.com {
+    reverse_proxy web:8000
+}
+
+# WWW redirect to non-www
+www.openmsk.com {
+    redir https://openmsk.com{uri} permanent
+}

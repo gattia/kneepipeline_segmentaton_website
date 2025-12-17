@@ -1,4 +1,8 @@
-# Routes package
-from . import health
+"""
+Routes package - FastAPI route modules.
 
-__all__ = ["health"]
+All routers are exported for registration in main.py.
+"""
+from . import download, health, stats, status, upload
+
+__all__ = ["health", "upload", "status", "download", "stats"]

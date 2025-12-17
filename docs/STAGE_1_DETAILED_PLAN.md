@@ -2335,6 +2335,21 @@ addopts = "-v --tb=short"
 - [ ] Create `pyproject.toml` with linting configuration
 - [ ] Verify CI passes on push
 
+### Docker & Deployment (Stage 1.6)
+- [ ] Create `docker/Dockerfile`
+- [ ] Create `docker/docker-compose.yml`
+- [ ] Create `.dockerignore`
+- [ ] Create GitHub Actions workflows
+- [ ] Deploy to GCP VM
+- [ ] Configure firewall rules
+
+### HTTPS with Caddy (Stage 1.7)
+- [ ] Create `docker/Caddyfile`
+- [ ] Update `docker-compose.yml` with Caddy service
+- [ ] Configure GCP firewall for ports 80/443
+- [ ] Deploy and verify HTTPS
+- [ ] Test certificate auto-provisioning
+
 ### Documentation
 - [ ] Create basic `README.md` with setup instructions
 - [ ] Document API endpoints

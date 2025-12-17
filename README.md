@@ -38,6 +38,39 @@ make worker
 
 Then open http://localhost:8000 in your browser.
 
+### Docker Deployment (Production)
+
+```bash
+cd ~/programming/kneepipeline_segmentaton_website
+
+# Stop any existing Redis running outside Docker
+docker stop redis 2>/dev/null || true
+
+# Create environment file
+cp docker/.env.example docker/.env
+
+# Build and start all services
+cd docker
+docker compose up -d --build
+
+# Check status
+docker compose ps
+
+# View logs
+docker compose logs -f
+```
+
+**Services started:**
+- `knee-pipeline-caddy` - Reverse proxy with auto-HTTPS (ports 80, 443)
+- `knee-pipeline-redis` - Redis (internal only)
+- `knee-pipeline-web` - FastAPI (internal only)
+- `knee-pipeline-worker` - Celery worker
+
+**Access via HTTPS:** `https://openmsk.com`
+
+> **Note**: The application uses Caddy for automatic HTTPS. Access via domain name, not IP address.
+> See [docs/stage_1/STAGE_1.7_HTTPS_CADDY.md](docs/stage_1/STAGE_1.7_HTTPS_CADDY.md) for setup details.
+
 ---
 
 ## Testing
@@ -66,6 +99,7 @@ make test-cov
 | `stage_1_4` | API routes |
 | `stage_1_5` | Frontend |
 | `stage_1_6` | Docker & deployment |
+| `stage_1_7` | HTTPS with Caddy |
 
 Run a specific marker:
 ```bash
@@ -121,7 +155,9 @@ Run `make help` to see all available commands:
 | [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) | Architecture, API design, full specification |
 | [docs/STAGE_0_DEV_ENVIRONMENT.md](docs/STAGE_0_DEV_ENVIRONMENT.md) | GCP VM setup, Miniconda, Docker, Redis |
 | [docs/STAGE_1_DETAILED_PLAN.md](docs/STAGE_1_DETAILED_PLAN.md) | MVP implementation details |
-| [docs/stage_1/](docs/stage_1/) | Step-by-step guides for each component |
+| [docs/stage_1/](docs/stage_1/) | Step-by-step guides for Stage 1 components |
+| [docs/STAGE_2_OVERVIEW.md](docs/STAGE_2_OVERVIEW.md) | Progress & statistics enhancements |
+| [docs/STAGE_3_OVERVIEW.md](docs/STAGE_3_OVERVIEW.md) | Real pipeline integration with GPU |
 
 ---
 
@@ -130,10 +166,11 @@ Run `make help` to see all available commands:
 - [x] Stage 0: Development Environment
 - [x] Stage 1.1: Project Scaffolding
 - [x] Stage 1.2: Models & Services
-- [ ] Stage 1.3: Redis & Celery
-- [ ] Stage 1.4: API Routes
-- [ ] Stage 1.5: Frontend
-- [ ] Stage 1.6: Docker & Deployment
+- [x] Stage 1.3: Redis & Celery
+- [x] Stage 1.4: API Routes
+- [x] Stage 1.5: Frontend
+- [x] Stage 1.6: Docker & Deployment
+- [x] Stage 1.7: HTTPS with Caddy
 - [ ] Stage 2: Progress & Statistics  
 - [ ] Stage 3: Real Pipeline Integration
 

@@ -57,7 +57,7 @@ def get_statistics(redis_client: redis.Redis) -> dict:
         "today_processed": today_processed,
         "unique_users": unique_users,
         "avg_processing_time": avg_time,
-        "uptime_hours": round(uptime_hours, 1)
+        "uptime_hours": round(uptime_hours, 1),
     }
 
 

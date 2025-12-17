@@ -50,26 +50,32 @@ class TestDependencies:
 
     def test_fastapi_importable(self):
         import fastapi
+
         assert fastapi.__version__
 
     def test_uvicorn_importable(self):
         import uvicorn
+
         assert uvicorn
 
     def test_redis_importable(self):
         import redis
+
         assert redis.__version__
 
     def test_celery_importable(self):
         import celery
+
         assert celery.__version__
 
     def test_simpleitk_importable(self):
         import SimpleITK
+
         assert SimpleITK.Version_MajorVersion() >= 2
 
     def test_pydantic_settings_importable(self):
         import pydantic_settings
+
         assert pydantic_settings
 
 
@@ -80,6 +86,7 @@ class TestHealthEndpoint:
     def client(self):
         """Create test client for the FastAPI app."""
         from backend.main import app
+
         return TestClient(app)
 
     def test_health_returns_200(self, client):
@@ -98,9 +105,15 @@ class TestHealthEndpoint:
         response = client.get("/health")
         data = response.json()
 
-        required_fields = ["status", "redis", "worker", "timestamp"]
+        required_fields = ["status", "redis", "worker", "gpu", "timestamp"]
         for field in required_fields:
             assert field in data, f"Missing required field: {field}"
+
+    def test_health_gpu_status_valid(self, client):
+        """GPU field must be 'available' or 'unavailable'."""
+        response = client.get("/health")
+        data = response.json()
+        assert data["gpu"] in ["available", "unavailable"]
 
     def test_health_status_valid(self, client):
         """Status field must be 'healthy' or 'unhealthy'."""
@@ -115,6 +128,7 @@ class TestAPIDocs:
     @pytest.fixture
     def client(self):
         from backend.main import app
+
         return TestClient(app)
 
     def test_docs_accessible(self, client):

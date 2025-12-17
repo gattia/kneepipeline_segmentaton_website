@@ -37,6 +37,7 @@ class Job:
         retain_for_research: Whether user consented to research retention
         email: Optional user email for tracking/notifications
     """
+
     id: str
     input_filename: str
     input_path: str

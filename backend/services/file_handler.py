@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Optional
 
 # Valid medical image extensions
-VALID_EXTENSIONS = {'.nii', '.nii.gz', '.nrrd', '.dcm', '.zip'}
+VALID_EXTENSIONS = {".nii", ".nii.gz", ".nrrd", ".dcm", ".zip"}
 
 
 def validate_and_prepare_upload(upload_path: Path, temp_dir: Path) -> Path:
@@ -31,8 +31,8 @@ def validate_and_prepare_upload(upload_path: Path, temp_dir: Path) -> Path:
     """
     # Check extension
     suffix = upload_path.suffix.lower()
-    if upload_path.name.endswith('.nii.gz'):
-        suffix = '.nii.gz'
+    if upload_path.name.endswith(".nii.gz"):
+        suffix = ".nii.gz"
 
     if suffix not in VALID_EXTENSIONS:
         raise ValueError(
@@ -42,7 +42,7 @@ def validate_and_prepare_upload(upload_path: Path, temp_dir: Path) -> Path:
 
     temp_dir.mkdir(parents=True, exist_ok=True)
 
-    if suffix == '.zip':
+    if suffix == ".zip":
         return _handle_zip(upload_path, temp_dir)
     else:
         return _validate_medical_image(upload_path)
@@ -63,7 +63,7 @@ def _handle_zip(zip_path: Path, extract_dir: Path) -> Path:
         ValueError: If zip is invalid or contains no medical images
     """
     try:
-        with zipfile.ZipFile(zip_path, 'r') as zf:
+        with zipfile.ZipFile(zip_path, "r") as zf:
             zf.extractall(extract_dir)
     except zipfile.BadZipFile as err:
         raise ValueError("Invalid or corrupted zip file") from err
@@ -96,23 +96,23 @@ def _find_medical_image(directory: Path) -> Optional[Path]:
         Path to the medical image, or None if not found
     """
     # First, look for NIfTI files (preferred)
-    for pattern in ['*.nii.gz', '*.nii']:
+    for pattern in ["*.nii.gz", "*.nii"]:
         matches = list(directory.rglob(pattern))
         if matches:
             return matches[0]
 
     # Look for NRRD files
-    nrrd_matches = list(directory.rglob('*.nrrd'))
+    nrrd_matches = list(directory.rglob("*.nrrd"))
     if nrrd_matches:
         return nrrd_matches[0]
 
     # Look for DICOM directories (folder with multiple .dcm files)
-    for subdir in directory.rglob('*'):
+    for subdir in directory.rglob("*"):
         if subdir.is_dir() and _is_dicom_directory(subdir):
             return subdir
 
     # Check for single 3D DICOM file
-    dcm_files = list(directory.rglob('*.dcm'))
+    dcm_files = list(directory.rglob("*.dcm"))
     if dcm_files:
         return dcm_files[0]
 
@@ -127,7 +127,7 @@ def _is_dicom_directory(path: Path) -> bool:
     """
     if not path.is_dir():
         return False
-    dcm_files = list(path.glob('*.dcm'))
+    dcm_files = list(path.glob("*.dcm"))
     return len(dcm_files) >= 10
 
 
@@ -175,16 +175,14 @@ def _validate_medical_image(path: Path) -> Path:
             dims = reader.GetDimension()
             if dims < 3:
                 raise ValueError(
-                    f"Image is {dims}D, expected 3D volume. "
-                    "Please upload a 3D MRI scan."
+                    f"Image is {dims}D, expected 3D volume. " "Please upload a 3D MRI scan."
                 )
 
             # Check size is reasonable
             size = reader.GetSize()
             if any(s < 10 for s in size[:3]):
                 raise ValueError(
-                    f"Image dimensions too small: {size}. "
-                    "Expected a full 3D MRI volume."
+                    f"Image dimensions too small: {size}. " "Expected a full 3D MRI volume."
                 )
 
         return path
