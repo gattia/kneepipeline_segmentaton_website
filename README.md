@@ -199,38 +199,46 @@ curl http://localhost:8000/health
 # {"status":"healthy","redis":"connected","worker":"available",...}
 ```
 
-### Docker Deployment (Production)
+### Production Deployment (Hybrid Docker + systemd)
+
+The production deployment uses Docker for web services (Caddy, Redis, FastAPI) and systemd for the GPU worker.
+
+**Live URL:** https://openmsk.com
+
+See **[docs/DEPLOYMENT_HYBRID.md](docs/DEPLOYMENT_HYBRID.md)** for complete instructions.
+
+**Quick Reference:**
 
 ```bash
 cd ~/programming/kneepipeline_segmentaton_website
 
-# Stop any existing Redis running outside Docker
-docker stop redis 2>/dev/null || true
+# Start all services
+make prod-start
 
-# Create environment file
-cp docker/.env.example docker/.env
-
-# Build and start all services
-cd docker
-docker compose up -d --build
+# Stop all services
+make prod-stop
 
 # Check status
-docker compose ps
+make prod-status
 
 # View logs
-docker compose logs -f
+make prod-logs
+
+# Restart after code changes
+sudo systemctl restart knee-pipeline-worker  # Worker code
+cd docker && docker compose up -d --build web  # Web code
 ```
 
-**Services started:**
-- `knee-pipeline-caddy` - Reverse proxy with auto-HTTPS (ports 80, 443)
-- `knee-pipeline-redis` - Redis (internal only)
-- `knee-pipeline-web` - FastAPI (internal only)
-- `knee-pipeline-worker` - Celery worker
+**Services:**
+| Service | Location | Purpose |
+|---------|----------|---------|
+| `knee-pipeline-caddy` | Docker | HTTPS reverse proxy |
+| `knee-pipeline-redis` | Docker | Job queue |
+| `knee-pipeline-web` | Docker | FastAPI web server |
+| `knee-pipeline-worker` | systemd | GPU processing |
 
-**Access via HTTPS:** `https://openmsk.com`
-
-> **Note**: The application uses Caddy for automatic HTTPS. Access via domain name, not IP address.
-> See [docs/stage_1/STAGE_1.7_HTTPS_CADDY.md](docs/stage_1/STAGE_1.7_HTTPS_CADDY.md) for setup details.
+> **Note**: The worker runs natively via systemd to access the GPU and conda environment.
+> See [docs/DEPLOYMENT_HYBRID.md](docs/DEPLOYMENT_HYBRID.md) for troubleshooting and detailed configuration.
 
 ---
 
@@ -299,15 +307,24 @@ Run `make help` to see all available commands:
 
 | Command | Description |
 |---------|-------------|
+| **Development** | |
 | `make install` | Install Python dependencies |
+| `make run` | Start FastAPI server (dev) |
+| `make worker` | Start Celery worker (dev) |
+| `make redis-start` | Start Redis container |
+| **Testing** | |
 | `make test` | Run all tests |
 | `make test-cov` | Run tests with coverage |
 | `make lint` | Check code with ruff |
 | `make format` | Auto-fix linting issues |
-| `make run` | Start FastAPI server |
-| `make worker` | Start Celery worker |
-| `make redis-start` | Start Redis container |
 | `make verify` | Run lint + tests (CI check) |
+| **Production** | |
+| `make prod-setup` | One-time setup (data dirs, systemd) |
+| `make prod-start` | Start all production services |
+| `make prod-stop` | Stop all production services |
+| `make prod-status` | Check status of all services |
+| `make prod-logs` | Tail all logs |
+| **Utilities** | |
 | `make clean` | Remove cache files |
 
 ---
@@ -317,6 +334,7 @@ Run `make help` to see all available commands:
 | Document | Description |
 |----------|-------------|
 | [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) | Architecture, API design, full specification |
+| [docs/DEPLOYMENT_HYBRID.md](docs/DEPLOYMENT_HYBRID.md) | **Production deployment guide** |
 | [docs/STAGE_0_DEV_ENVIRONMENT.md](docs/STAGE_0_DEV_ENVIRONMENT.md) | GCP VM setup, Miniconda, Docker, Redis |
 | [docs/STAGE_1_DETAILED_PLAN.md](docs/STAGE_1_DETAILED_PLAN.md) | MVP implementation details |
 | [docs/stage_1/](docs/stage_1/) | Step-by-step guides for Stage 1 components |

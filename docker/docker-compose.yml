@@ -1,5 +1,9 @@
 # Docker Compose for Knee MRI Analysis Pipeline
-# Stage 1: Development/Production deployment with HTTPS via Caddy
+# Hybrid deployment: Docker for web services, systemd for worker
+#
+# Usage:
+#   cd docker && docker compose up -d
+#   See: docs/DEPLOYMENT_HYBRID.md for full instructions
 
 services:
   # Caddy reverse proxy with automatic HTTPS
@@ -13,16 +17,19 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - web
     restart: unless-stopped
 
+  # Redis job queue
   redis:
     image: redis:7-alpine
     container_name: knee-pipeline-redis
-    # Redis only accessible within Docker network (not exposed externally)
-    expose:
-      - "6379"
+    # Exposed to localhost for native worker to connect
+    ports:
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
@@ -33,48 +40,40 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # FastAPI web server
   web:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: knee-pipeline-web
-    # Web only accessible via Caddy (not exposed externally)
     expose:
       - "8000"
     volumes:
-      - app_data:/app/data
+      # Bind mount to shared data directory on mounted disk
+      - /mnt/data/knee_pipeline_data:/app/data
     depends_on:
       redis:
         condition: service_healthy
     environment:
       - REDIS_URL=redis://redis:6379/0
       - DEBUG=false
-    env_file:
-      - .env
+      - UPLOAD_DIR=/app/data/uploads
+      - TEMP_DIR=/app/data/temp
+      - RESULTS_DIR=/app/data/results
+      - LOG_DIR=/app/data/logs
+      # Available models (those with weights downloaded)
+      # Update this list when you download new model weights
+      - AVAILABLE_MODELS=nnunet_fullres,nnunet_cascade,dosma_ananya
     restart: unless-stopped
 
-  worker:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    container_name: knee-pipeline-worker
-    command: celery -A backend.workers.celery_app worker --loglevel=info --concurrency=1
-    volumes:
-      - app_data:/app/data
-    depends_on:
-      redis:
-        condition: service_healthy
-    environment:
-      - REDIS_URL=redis://redis:6379/0
-    env_file:
-      - .env
-    restart: unless-stopped
+  # NOTE: Worker runs via systemd, not Docker
+  # This allows the worker to use the native conda environment with GPU access
+  # See: systemd/knee-pipeline-worker.service
+  # See: docs/DEPLOYMENT_HYBRID.md
 
 volumes:
   redis_data:
     name: knee-pipeline-redis-data
-  app_data:
-    name: knee-pipeline-app-data
   caddy_data:
     name: knee-pipeline-caddy-data
   caddy_config:

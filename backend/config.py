@@ -9,14 +9,17 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
 
     # Application
-    debug: bool = True
+    debug: bool = False
     max_upload_size_mb: int = 600
 
-    # Directories
-    upload_dir: Path = Path("./data/uploads")
-    temp_dir: Path = Path("./data/temp")
-    log_dir: Path = Path("./data/logs")
-    results_dir: Path = Path("./data/results")
+    # Directories - defaults to mounted disk location for production
+    # These can be overridden via environment variables or .env file
+    # In Docker: /app/data/* (bind mounted to /mnt/data/knee_pipeline_data)
+    # Native: /mnt/data/knee_pipeline_data/* or ./data/* for development
+    upload_dir: Path = Path("/mnt/data/knee_pipeline_data/uploads")
+    temp_dir: Path = Path("/mnt/data/knee_pipeline_data/temp")
+    log_dir: Path = Path("/mnt/data/knee_pipeline_data/logs")
+    results_dir: Path = Path("/mnt/data/knee_pipeline_data/results")
 
     # Results
     results_expiry_hours: int = 24

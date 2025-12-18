@@ -3,6 +3,7 @@ Download route - GET /download/{job_id}
 
 Serves the results zip file for completed jobs.
 """
+import os
 from pathlib import Path
 
 import redis
@@ -13,6 +14,23 @@ from ..models.job import Job
 from ..services.job_service import get_redis_client
 
 router = APIRouter()
+
+# Path translation for Host -> Docker (reverse of worker translation)
+# The worker stores paths as host paths, but download runs in Docker
+HOST_DATA_PATH = "/mnt/data/knee_pipeline_data"
+DOCKER_DATA_PATH = os.getenv("DOCKER_DATA_PATH", "/app/data")
+
+
+def translate_host_path_to_docker(path: str) -> str:
+    """
+    Translate host path to Docker container path.
+    
+    The worker stores result paths as host paths (/mnt/data/knee_pipeline_data/...),
+    but when running in Docker, we need to access them at /app/data/...
+    """
+    if path.startswith(HOST_DATA_PATH):
+        return path.replace(HOST_DATA_PATH, DOCKER_DATA_PATH, 1)
+    return path
 
 
 @router.get("/download/{job_id}")
@@ -43,7 +61,9 @@ async def download_results(
     if not job.result_path:
         raise HTTPException(status_code=404, detail="Results not found")
 
-    result_path = Path(job.result_path)
+    # Translate host path to Docker path (worker stores host paths)
+    translated_path = translate_host_path_to_docker(job.result_path)
+    result_path = Path(translated_path)
     if not result_path.exists():
         raise HTTPException(status_code=404, detail="Results file not found")
 

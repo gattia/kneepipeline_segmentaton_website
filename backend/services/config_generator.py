@@ -10,7 +10,8 @@ from pathlib import Path
 from typing import Optional
 
 # Base path for the kneepipeline library
-KNEEPIPELINE_PATH = Path(os.path.expanduser("~/programming/kneepipeline"))
+# Can be overridden via KNEEPIPELINE_PATH environment variable
+KNEEPIPELINE_PATH = Path(os.getenv("KNEEPIPELINE_PATH", os.path.expanduser("~/programming/kneepipeline")))
 
 # All possible segmentation models (some may not have weights downloaded)
 ALL_SEG_MODELS = [
@@ -39,13 +40,32 @@ def get_available_models() -> list:
     """
     Get list of segmentation models that have weights downloaded.
     
-    Dynamically checks if model weight files exist.
+    Priority:
+    1. If AVAILABLE_MODELS env var is set, use that (comma-separated list)
+    2. Otherwise, dynamically check if model weight files exist
+    3. If path doesn't exist (Docker), fall back to env var or empty list
+    
+    Set AVAILABLE_MODELS in docker-compose.yml for the web container.
     """
+    # Check for explicit environment variable first
+    available_env = os.getenv("AVAILABLE_MODELS")
+    if available_env:
+        # Parse comma-separated list, filter to valid models
+        models = [m.strip() for m in available_env.split(",") if m.strip()]
+        return [m for m in models if m in ALL_SEG_MODELS]
+    
+    # If kneepipeline path doesn't exist, return empty (no models available)
+    # This happens when running in Docker where only the worker has access to weights
+    if not KNEEPIPELINE_PATH.exists():
+        return []
+    
+    # Dynamically check which models have weights
     available = []
     for model in ALL_SEG_MODELS:
         weight_path = MODEL_WEIGHT_PATHS.get(model)
         if weight_path and weight_path.exists():
             available.append(model)
+    
     return available
 
 

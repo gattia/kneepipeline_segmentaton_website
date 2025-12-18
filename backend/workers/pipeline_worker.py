@@ -30,6 +30,23 @@ PIPELINE_SCRIPT = KNEEPIPELINE_PATH / "dosma_knee_seg.py"
 # Timeout for pipeline execution (30 minutes)
 PIPELINE_TIMEOUT_SECONDS = 1800
 
+# Path translation for Docker -> Host
+# The web container uses /app/data, but the host uses /mnt/data/knee_pipeline_data
+DOCKER_DATA_PATH = "/app/data"
+HOST_DATA_PATH = os.getenv("HOST_DATA_PATH", "/mnt/data/knee_pipeline_data")
+
+
+def translate_docker_path(path: str) -> str:
+    """
+    Translate Docker container path to host path.
+    
+    The web container stores files at /app/data/..., but the worker
+    running on the host needs to access them at /mnt/data/knee_pipeline_data/...
+    """
+    if path.startswith(DOCKER_DATA_PATH):
+        return path.replace(DOCKER_DATA_PATH, HOST_DATA_PATH, 1)
+    return path
+
 
 def run_real_pipeline(
     input_path: str,
@@ -56,8 +73,10 @@ def run_real_pipeline(
         RuntimeError: If pipeline execution fails
         TimeoutError: If pipeline exceeds timeout
     """
-    input_path = Path(input_path)
-    output_dir = Path(output_dir)
+    # Translate Docker paths to host paths
+    input_path = Path(translate_docker_path(str(input_path)))
+    output_dir = Path(translate_docker_path(str(output_dir)))
+    config_path = Path(translate_docker_path(str(config_path)))
 
     # Create output directory
     results_dir = output_dir / "pipeline_output"

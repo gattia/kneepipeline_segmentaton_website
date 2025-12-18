@@ -10,10 +10,22 @@ This module simulates the real processing pipeline by:
 The real pipeline will replace this in Phase 3.
 """
 import json
+import os
 import shutil
 import time
 from pathlib import Path
 from typing import Callable, Optional
+
+# Path translation for Docker -> Host (same as pipeline_worker)
+DOCKER_DATA_PATH = "/app/data"
+HOST_DATA_PATH = os.getenv("HOST_DATA_PATH", "/mnt/data/knee_pipeline_data")
+
+
+def translate_docker_path(path: str) -> str:
+    """Translate Docker container path to host path."""
+    if path.startswith(DOCKER_DATA_PATH):
+        return path.replace(DOCKER_DATA_PATH, HOST_DATA_PATH, 1)
+    return path
 
 
 def dummy_pipeline(
@@ -46,7 +58,9 @@ def dummy_pipeline(
     """
     import SimpleITK as sitk
 
-    input_path = Path(input_path)
+    # Translate Docker paths to host paths
+    input_path = Path(translate_docker_path(str(input_path)))
+    output_dir = Path(translate_docker_path(str(output_dir)))
 
     # Create output directory
     results_dir = output_dir / "results"

@@ -1,0 +1,40 @@
+[Unit]
+Description=Knee Pipeline Celery Worker
+Documentation=https://github.com/gattia/kneepipeline_segmentaton_website
+After=network.target docker.service
+Wants=docker.service
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=gattia
+Group=gattia
+WorkingDirectory=/mnt/data/programming/kneepipeline_segmentaton_website
+
+# Environment
+Environment="PATH=/mnt/data/miniconda3/envs/kneepipeline/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="REDIS_URL=redis://localhost:6379/0"
+Environment="UPLOAD_DIR=/mnt/data/knee_pipeline_data/uploads"
+Environment="TEMP_DIR=/mnt/data/knee_pipeline_data/temp"
+Environment="RESULTS_DIR=/mnt/data/knee_pipeline_data/results"
+Environment="LOG_DIR=/mnt/data/knee_pipeline_data/logs"
+
+# Start command
+ExecStart=/mnt/data/miniconda3/envs/kneepipeline/bin/celery \
+    -A backend.workers.celery_app worker \
+    --loglevel=info \
+    --concurrency=1
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=knee-pipeline-worker
+
+[Install]
+WantedBy=multi-user.target
+
