@@ -9,13 +9,13 @@ Note on Redis client:
     job_service.py because the job_service version uses FastAPI's Depends()
     pattern, which only works in HTTP request context, not in Celery workers.
 """
+import os
 from datetime import datetime
 
 import redis
 
 # Import REDIS_URL from celery_app to avoid duplicating env var read
 from .celery_app import REDIS_URL, celery_app
-from .dummy_worker import dummy_pipeline
 
 
 def get_redis_client() -> redis.Redis:
@@ -36,7 +36,7 @@ def process_pipeline(self, job_id: str, input_path: str, options: dict) -> dict:
     This task:
     1. Loads the job from Redis
     2. Updates status to 'processing'
-    3. Runs the dummy pipeline (Phase 1) or real pipeline (Phase 3)
+    3. Runs the real pipeline (or dummy for testing)
     4. Updates job with results or error
     5. Records statistics
 
@@ -62,6 +62,7 @@ def process_pipeline(self, job_id: str, input_path: str, options: dict) -> dict:
     from backend.services.statistics import increment_processed_count
 
     redis_client = get_redis_client()
+    settings = get_settings()
 
     # Load job from Redis
     job = Job.load(job_id, redis_client)
@@ -75,12 +76,11 @@ def process_pipeline(self, job_id: str, input_path: str, options: dict) -> dict:
     job.save(redis_client)
 
     try:
-        # Get settings for output directory
-        settings = get_settings()
-        output_dir = settings.results_dir / job_id
+        # Setup output directory (use resolve() for absolute path)
+        output_dir = (settings.results_dir / job_id).resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Define progress callback to update job status
+        # Progress callback to update job status
         def progress_callback(step: int, total: int, step_name: str):
             job.current_step = step
             job.total_steps = total
@@ -88,14 +88,37 @@ def process_pipeline(self, job_id: str, input_path: str, options: dict) -> dict:
             job.progress_percent = int((step / total) * 100)
             job.save(redis_client)
 
-        # Run dummy pipeline (Phase 1)
-        # In Phase 3, this will call the real pipeline
-        result_path = dummy_pipeline(
-            input_path=input_path,
-            options=options,
-            output_dir=output_dir,
-            progress_callback=progress_callback,
-        )
+        # Decide whether to use real or dummy pipeline
+        use_real_pipeline = _should_use_real_pipeline(options)
+
+        if use_real_pipeline:
+            # Import real pipeline components
+            from backend.services.config_generator import generate_pipeline_config
+            from backend.workers.pipeline_worker import run_real_pipeline
+
+            # Generate job-specific config
+            config_path = generate_pipeline_config(
+                job_dir=output_dir,
+                options=options
+            )
+
+            # Run real pipeline
+            result_path = run_real_pipeline(
+                input_path=input_path,
+                options=options,
+                output_dir=output_dir,
+                config_path=config_path,
+                progress_callback=progress_callback
+            )
+        else:
+            # Use dummy pipeline for testing
+            from backend.workers.dummy_worker import dummy_pipeline
+            result_path = dummy_pipeline(
+                input_path=input_path,
+                options=options,
+                output_dir=output_dir,
+                progress_callback=progress_callback
+            )
 
         # Mark job as complete
         job.status = "complete"
@@ -119,28 +142,50 @@ def process_pipeline(self, job_id: str, input_path: str, options: dict) -> dict:
             "duration_seconds": duration,
         }
 
-    except Exception as e:
-        # Mark job as error
+    except TimeoutError as e:
+        # Use error handler for user-friendly message
+        from backend.services.error_handler import format_error_for_job
+        error_code, error_message = format_error_for_job(e)
         job.status = "error"
-        job.error_message = str(e)
-        job.error_code = _get_error_code(e)
+        job.error_message = error_message
+        job.error_code = error_code
         job.save(redis_client)
+        _cleanup_after_error()
+        raise
+
+    except Exception as e:
+        # Try to get more specific error from pipeline output
+        from backend.services.error_handler import format_error_for_job
+        output = getattr(e, 'output', str(e))
+        error_code, error_message = format_error_for_job(e, output)
+        job.status = "error"
+        job.error_message = error_message
+        job.error_code = error_code
+        job.save(redis_client)
+        _cleanup_after_error()
 
         # Re-raise to trigger Celery retry if applicable
         raise
 
 
-def _get_error_code(exception: Exception) -> str:
-    """Map exception to error code for API response."""
-    error_msg = str(exception).lower()
+def _should_use_real_pipeline(options: dict) -> bool:
+    """
+    Determine whether to use real pipeline or dummy.
 
-    if "not found" in error_msg:
-        return "FILE_NOT_FOUND"
-    elif "read" in error_msg or "format" in error_msg:
-        return "INVALID_FORMAT"
-    elif "memory" in error_msg or "oom" in error_msg:
-        return "GPU_OOM"
-    elif "dicom" in error_msg:
-        return "DICOM_ERROR"
-    else:
-        return "PIPELINE_ERROR"
+    Uses real pipeline by default. Set USE_DUMMY_PIPELINE=1 env var
+    to force dummy pipeline for testing.
+    """
+    if os.getenv("USE_DUMMY_PIPELINE", "0") == "1":
+        return False
+    return True
+
+
+def _cleanup_after_error():
+    """Clean up resources after an error."""
+    try:
+        from backend.workers.pipeline_worker import cleanup_gpu_memory
+        cleanup_gpu_memory()
+    except Exception:
+        pass  # Ignore cleanup errors
+
+

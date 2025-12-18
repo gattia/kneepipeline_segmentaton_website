@@ -24,6 +24,10 @@ const elements = {
     nsmOptions: document.getElementById('nsm-options'),
     retainResults: document.getElementById('retain-results'),
     
+    // Advanced options
+    cartilageSmoothing: document.getElementById('cartilage-smoothing'),
+    batchSize: document.getElementById('batch-size'),
+    
     // Processing
     processingFilename: document.getElementById('processing-filename'),
     queuePosition: document.getElementById('queue-position'),
@@ -145,6 +149,17 @@ async function uploadFile() {
     formData.append('perform_nsm', elements.performNsm.checked);
     formData.append('nsm_type', document.querySelector('input[name="nsm-type"]:checked').value);
     formData.append('retain_results', elements.retainResults.checked);
+    
+    // Advanced options - always include with current values
+    const cartilageSmoothing = elements.cartilageSmoothing?.value;
+    if (cartilageSmoothing) {
+        formData.append('cartilage_smoothing', parseFloat(cartilageSmoothing));
+    }
+    
+    const batchSize = elements.batchSize?.value;
+    if (batchSize) {
+        formData.append('batch_size', parseInt(batchSize));
+    }
     
     try {
         elements.submitBtn.disabled = true;
@@ -325,10 +340,52 @@ async function loadStats() {
     }
 }
 
+// Load available models dynamically from API
+async function loadAvailableModels() {
+    try {
+        const response = await fetch('/models');
+        if (response.ok) {
+            const data = await response.json();
+            const select = elements.segModel;
+            
+            // Clear existing options
+            select.innerHTML = '';
+            
+            // Add available models
+            data.segmentation_models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = data.model_labels[model] || model;
+                if (model === data.defaults.segmentation_model) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+            
+            // Update advanced option defaults from API
+            if (elements.cartilageSmoothing && data.defaults.cartilage_smoothing) {
+                elements.cartilageSmoothing.value = data.defaults.cartilage_smoothing;
+            }
+            if (elements.batchSize && data.defaults.batch_size) {
+                elements.batchSize.value = data.defaults.batch_size;
+            }
+            if (data.ranges) {
+                if (elements.batchSize && data.ranges.batch_size) {
+                    elements.batchSize.max = data.ranges.batch_size.max;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load available models:', error);
+        // Keep default dropdown options if API fails
+    }
+}
+
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
     initFilePond();
     loadStats();
+    loadAvailableModels();  // Dynamically load available segmentation models
     
     // Button handlers
     elements.submitBtn.addEventListener('click', uploadFile);

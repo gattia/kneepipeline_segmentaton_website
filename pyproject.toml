@@ -33,6 +33,9 @@ markers = [
     "stage_1_5: Stage 1.5 - Frontend",
     "stage_1_6: Stage 1.6 - Docker & Deployment",
     "stage_1_7: Stage 1.7 - HTTPS with Caddy",
+    "stage_3_3: Stage 3.3 - Pipeline worker integration",
+    "stage_3_4: Stage 3.4 - Configuration mapping",
+    "stage_3_5: Stage 3.5 - Error handling and progress updates",
     "slow: Slow tests (e.g., Docker builds)",
 ]
 asyncio_mode = "auto"

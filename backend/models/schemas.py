@@ -10,10 +10,11 @@ from pydantic import BaseModel, Field
 
 # Type aliases for Literal types
 SegmentationModel = Literal[
-    "nnunet_fullres", "nnunet_cascade", "goyal_sagittal", "goyal_coronal", "goyal_axial", "staple"
+    "nnunet_fullres", "nnunet_cascade", "dosma_ananya",
+    "goyal_sagittal", "goyal_coronal", "goyal_axial", "staple"
 ]
 
-NsmType = Literal["bone_and_cart", "bone_only", "both"]
+NsmType = Literal["bone_and_cart", "bone_only", "both", "none"]
 
 JobStatus = Literal["queued", "processing", "complete", "error"]
 
@@ -34,11 +35,17 @@ class UploadOptions(BaseModel):
     retain_results: bool = Field(
         default=True, description="Allow anonymized results to be retained for research"
     )
-    cartilage_smoothing: float = Field(
-        default=0.3125,
+    cartilage_smoothing: Optional[float] = Field(
+        default=0.4,
         ge=0.0,
-        le=1.0,
-        description="Cartilage smoothing parameter (not exposed in UI)",
+        le=2.0,
+        description="Cartilage smoothing variance (0.0-2.0), default 0.4mm",
+    )
+    batch_size: Optional[int] = Field(
+        default=128,
+        ge=1,
+        le=256,
+        description="Batch size for inference (1-256)",
     )
 
 

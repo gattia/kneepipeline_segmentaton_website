@@ -44,7 +44,9 @@ class TestPydanticSchemas:
         assert options.perform_nsm is True
         assert options.nsm_type == "bone_and_cart"
         assert options.retain_results is True
-        assert options.cartilage_smoothing == 0.3125
+        assert options.cartilage_smoothing is None  # Optional, defaults to None (uses pipeline default)
+        assert options.batch_size is None  # Optional, defaults to None (uses pipeline default)
+        assert options.clip_femur_top is True
         assert options.email is None
 
     def test_upload_options_validation(self):

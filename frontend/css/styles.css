@@ -166,6 +166,62 @@ header .subtitle {
     margin-top: 0.5rem;
 }
 
+/* Advanced Options */
+.advanced-options {
+    margin-top: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0;
+}
+
+.advanced-options summary {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-muted);
+    list-style: none;
+}
+
+.advanced-options summary::-webkit-details-marker {
+    display: none;
+}
+
+.advanced-options summary::before {
+    content: '▶ ';
+    font-size: 0.75rem;
+}
+
+.advanced-options[open] summary::before {
+    content: '▼ ';
+}
+
+.advanced-options summary:hover {
+    color: var(--text-color);
+}
+
+.advanced-options-content {
+    padding: 0 1rem 1rem 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.advanced-options-content .form-group {
+    margin-top: 1rem;
+}
+
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.form-group input[type="number"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
 /* Buttons */
 .btn {
     display: inline-flex;

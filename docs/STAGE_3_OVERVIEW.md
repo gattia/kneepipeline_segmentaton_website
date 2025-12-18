@@ -1,5 +1,7 @@
 # Stage 3: Real Pipeline Integration
 
+> **📋 Detailed Step-by-Step Guide**: See [STAGE_3_DETAILED_PLAN.md](./STAGE_3_DETAILED_PLAN.md) and the [stage_3/](./stage_3/) folder for actionable implementation steps designed for AI agents.
+
 ## Overview
 
 **Goal**: Replace the dummy worker with the actual knee MRI segmentation pipeline.
@@ -7,9 +9,9 @@
 **Estimated Time**: 1 week
 
 **Prerequisites**: 
-- Stage 1 & 2 complete
-- GPU VM available (NVIDIA GPU with CUDA)
-- Access to trained model weights
+- Stage 1 complete (Stage 2 optional)
+- GPU VM available (NVIDIA T4 or better with CUDA)
+- Access to trained model weights (downloadable from HuggingFace)
 
 ---
 
