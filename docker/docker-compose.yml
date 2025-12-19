@@ -63,7 +63,8 @@ services:
       - LOG_DIR=/app/data/logs
       # Available models (those with weights downloaded)
       # Update this list when you download new model weights
-      - AVAILABLE_MODELS=nnunet_fullres,nnunet_cascade,dosma_ananya
+      # dosma_ananya = Goyal 2024 (default, best performance)
+      - AVAILABLE_MODELS=dosma_ananya,nnunet_fullres,nnunet_cascade,goyal_sagittal,goyal_coronal,goyal_axial
     restart: unless-stopped
 
   # NOTE: Worker runs via systemd, not Docker

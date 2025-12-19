@@ -8,6 +8,8 @@
 
 **Deliverable**: All model weights downloaded and `config.json` created with correct paths.
 
+> **Canonical Reference**: See [../MODEL_WEIGHTS.md](../MODEL_WEIGHTS.md) for the complete model weights documentation, including current versions and update instructions.
+
 ---
 
 ## Prerequisites
@@ -30,25 +32,30 @@ python -c "from huggingface_hub import snapshot_download; print('HuggingFace Hub
 
 ```
 ~/programming/kneepipeline/
-├── NNUNET_MODELS/               # NEW: nnU-Net model weights
-│   └── huggingface/
-│       ├── Dataset500_KneeMRI/
-│       └── test_data/
-├── DOSMA_WEIGHTS/               # NEW: DOSMA segmentation weights
+├── DEPENDENCIES/
+│   └── nnunet_knee_inference/
+│       └── huggingface/
+│           ├── models/Dataset500_KneeMRI/   # nnU-Net model weights
+│           └── test_data/
+├── DOSMA_WEIGHTS/                           # DOSMA segmentation weights
+│   ├── Goyal_Bone_Cart_July_2024_best_model.h5
 │   ├── sagittal_best_model.h5
 │   ├── coronal_best_model.h5
 │   └── axial_best_model.h5
-├── NSM_MODELS/                  # NEW: Neural Shape Model weights
-│   ├── 647_nsm_femur_cartilage_v0.0.1/
+├── NSM_MODELS/                              # Neural Shape Model weights
+│   ├── 647_nsm_femur_v0.0.1/
 │   └── 551_nsm_femur_bone_v0.0.1/
-└── config.json                  # NEW: Configuration with paths
+├── BSCORE_MODELS/                           # BScore models (included)
+│   ├── NSM_Orig_BScore_Bone_Cartilage_April_17_2025/
+│   └── NSM_Orig_BScore_Bone_Only_April_18_2025/
+└── config.json                              # Configuration with paths
 ```
 
 ---
 
 ## Success Criteria
 
-- [ ] nnU-Net models downloaded to `NNUNET_MODELS/`
+- [ ] nnU-Net models downloaded to `DEPENDENCIES/nnunet_knee_inference/huggingface/`
 - [ ] DOSMA weights downloaded to `DOSMA_WEIGHTS/`
 - [ ] NSM models downloaded to `NSM_MODELS/`
 - [ ] `config.json` created with correct absolute paths
@@ -127,6 +134,7 @@ EOF
 ```
 
 **Expected files:**
+- `Goyal_Bone_Cart_July_2024_best_model.h5` (combined model)
 - `sagittal_best_model.h5`
 - `coronal_best_model.h5`
 - `axial_best_model.h5`
@@ -208,6 +216,7 @@ with open(base_path / "config_template.json") as f:
 
 # Update paths with absolute paths
 config["models"] = {
+    "acl_qdess_bone_july_2024": str(base_path / "DOSMA_WEIGHTS/Goyal_Bone_Cart_July_2024_best_model.h5"),
     "goyal_sagittal": str(base_path / "DOSMA_WEIGHTS/sagittal_best_model.h5"),
     "goyal_coronal": str(base_path / "DOSMA_WEIGHTS/coronal_best_model.h5"),
     "goyal_axial": str(base_path / "DOSMA_WEIGHTS/axial_best_model.h5"),
@@ -215,8 +224,8 @@ config["models"] = {
 
 # NSM bone+cartilage model
 config["nsm"] = {
-    "path_model_config": str(base_path / "NSM_MODELS/647_nsm_femur_cartilage_v0.0.1/model_config.json"),
-    "path_model_state": str(base_path / "NSM_MODELS/647_nsm_femur_cartilage_v0.0.1/model/2000.pth"),
+    "path_model_config": str(base_path / "NSM_MODELS/647_nsm_femur_v0.0.1/model_params_config.json"),
+    "path_model_state": str(base_path / "NSM_MODELS/647_nsm_femur_v0.0.1/model/2000.pth"),
 }
 
 # BScore bone+cartilage
@@ -244,9 +253,9 @@ config["nnunet"] = {
 # Default settings
 config["default_seg_model"] = "nnunet_knee"
 config["perform_bone_and_cart_nsm"] = True
-config["perform_bone_only_nsm"] = False
+config["perform_bone_only_nsm"] = True
 config["clip_femur_top"] = True
-config["batch_size"] = 32
+config["batch_size"] = 64
 
 # Save config
 with open(base_path / "config.json", "w") as f:
@@ -388,18 +397,23 @@ After completing Stage 3.2:
 ~/programming/kneepipeline/
 ├── config.json                  # ✓ Created with correct paths
 ├── DOSMA_WEIGHTS/               # ✓ Downloaded
+│   ├── Goyal_Bone_Cart_July_2024_best_model.h5
 │   ├── sagittal_best_model.h5
 │   ├── coronal_best_model.h5
 │   └── axial_best_model.h5
 ├── NSM_MODELS/                  # ✓ Downloaded
-│   ├── 647_nsm_femur_cartilage_v0.0.1/
+│   ├── 647_nsm_femur_v0.0.1/
 │   └── 551_nsm_femur_bone_v0.0.1/
 ├── BSCORE_MODELS/               # ✓ Already included
+│   ├── NSM_Orig_BScore_Bone_Cartilage_April_17_2025/
+│   └── NSM_Orig_BScore_Bone_Only_April_18_2025/
 └── DEPENDENCIES/
     └── nnunet_knee_inference/
         └── huggingface/         # ✓ Downloaded
-            └── Dataset500_KneeMRI/
+            └── models/Dataset500_KneeMRI/
 ```
+
+> **See also**: [../MODEL_WEIGHTS.md](../MODEL_WEIGHTS.md) for verification commands and troubleshooting.
 
 ---
 

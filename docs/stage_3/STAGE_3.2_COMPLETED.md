@@ -1,12 +1,15 @@
 # Stage 3.2 Completed: Model Download and Configuration
 
-**Completed**: December 18, 2025
+**Completed**: December 18, 2025  
+**Updated**: December 19, 2025
 
 ---
 
 ## Summary
 
 Successfully downloaded all model weights and created the pipeline configuration file. The pipeline has been tested end-to-end with a real MRI image.
+
+> **Canonical Reference**: See [../MODEL_WEIGHTS.md](../MODEL_WEIGHTS.md) for the complete model weights documentation.
 
 ---
 
@@ -42,12 +45,17 @@ Downloaded from HuggingFace (`aagatti/dosma_bones`):
 
 ```
 ~/programming/kneepipeline/DOSMA_WEIGHTS/
-└── Goyal_Bone_Cart_July_2024_best_model.h5   # 324 MB
+├── Goyal_Bone_Cart_July_2024_best_model.h5   # 324 MB (combined model)
+├── sagittal_best_model.h5                     # 324 MB
+├── coronal_best_model.h5                      # 165 MB
+└── axial_best_model.h5                        # 165 MB
 ```
 
-**Note**: Only the combined model is currently available on HuggingFace. The separate orientation models (`sagittal_best_model.h5`, `coronal_best_model.h5`, `axial_best_model.h5`) for DOSMA-based segmentation are not yet uploaded. These can be added later if needed.
-
-**Impact**: None - nnU-Net is the default and recommended model. DOSMA models are optional alternatives.
+**Available Models:**
+- ✅ Combined bone+cartilage model (`Goyal_Bone_Cart_July_2024_best_model.h5`)
+- ✅ Sagittal plane model (`sagittal_best_model.h5`)
+- ✅ Coronal plane model (`coronal_best_model.h5`)
+- ✅ Axial plane model (`axial_best_model.h5`)
 
 ### 3. NSM Models Downloaded
 
@@ -55,22 +63,18 @@ Downloaded from HuggingFace (`aagatti/ShapeMedKnee`) - gated repo requiring auth
 
 ```
 ~/programming/kneepipeline/NSM_MODELS/
-├── 231_nsm_femur_cartilage_v0.0.1/    # Bone + Cartilage NSM
-│   ├── model_config.json
-│   ├── model/2000.pth
-│   └── latent_codes/2000.pth
-└── NSM_BScore_Aug_2024/               # Older BScore (not used)
-    ├── model.json
-    └── Bscore.py
+├── 647_nsm_femur_v0.0.1/           # Bone + Cartilage NSM
+│   ├── model_params_config.json
+│   └── model/2000.pth
+├── 551_nsm_femur_bone_v0.0.1/      # Bone Only NSM
+│   ├── model_params_config.json
+│   └── model/1150.pth
+└── 231_nsm_femur_cartilage_v0.0.1/ # (deprecated, kept for reference)
 ```
 
 **Available Models:**
-- ✅ Bone + Cartilage NSM (`231_nsm_femur_cartilage_v0.0.1`)
-- ❌ Bone-Only NSM (not in HuggingFace repo - can be copied manually if needed)
-
-**config.json updated:**
-- `perform_bone_and_cart_nsm`: `true` (enabled)
-- `perform_bone_only_nsm`: `false` (model not available)
+- ✅ Bone + Cartilage NSM (`647_nsm_femur_v0.0.1`)
+- ✅ Bone-Only NSM (`551_nsm_femur_bone_v0.0.1`)
 
 ### 4. BScore Models - Already Included
 
@@ -79,7 +83,9 @@ BScore models are already included in the kneepipeline repository:
 ```
 ~/programming/kneepipeline/BSCORE_MODELS/
 ├── NSM_Orig_BScore_Bone_Cartilage_April_17_2025/
-└── NSM_Orig_BScore_Bone_Only_April_18_2025/
+├── NSM_Orig_BScore_Bone_Only_April_18_2025/
+├── NSM_Orig_BScore_Bone_Only_Jan_2025/
+└── NSM_Orig_BScore_Nov_2024/
 ```
 
 ### 5. config.json Created
@@ -88,12 +94,16 @@ Created `~/programming/kneepipeline/config.json` with:
 
 | Setting | Value | Notes |
 |---------|-------|-------|
-| `default_seg_model` | `nnunet_knee` | Uses nnU-Net (recommended) |
-| `nnunet.type` | `fullres` | Can be changed to `cascade` |
-| `perform_bone_and_cart_nsm` | `true` | ✅ Enabled - NSM model downloaded |
-| `perform_bone_only_nsm` | `false` | Model not available in HuggingFace |
+| `default_seg_model` | `acl_qdess_bone_july_2024` | Goyal 2024 (recommended) |
+| `nnunet.type` | `fullres` | Alternative: `cascade` |
+| `perform_bone_and_cart_nsm` | `true` | ✅ Enabled |
+| `perform_bone_only_nsm` | `true` | ✅ Enabled |
 | `clip_femur_top` | `true` | Standard preprocessing |
-| `batch_size` | `32` | Adjust based on GPU memory |
+| `batch_size` | `64` | Adjust based on GPU memory |
+
+**NSM Paths:**
+- Bone + Cartilage: `NSM_MODELS/647_nsm_femur_v0.0.1/`
+- Bone Only: `NSM_MODELS/551_nsm_femur_bone_v0.0.1/`
 
 ---
 
@@ -168,10 +178,14 @@ python dosma_knee_seg.py \
 ~/programming/kneepipeline/
 ├── config.json                  # ✓ Created with correct paths
 ├── download_nsm_models.py       # ✓ Helper script for NSM download
-├── DOSMA_WEIGHTS/               # ⚠️ Partial (1 of 4 models)
-│   └── Goyal_Bone_Cart_July_2024_best_model.h5
-├── NSM_MODELS/                  # ✓ Downloaded (bone+cart only)
-│   └── 231_nsm_femur_cartilage_v0.0.1/
+├── DOSMA_WEIGHTS/               # ✓ All 4 models downloaded
+│   ├── Goyal_Bone_Cart_July_2024_best_model.h5
+│   ├── sagittal_best_model.h5
+│   ├── coronal_best_model.h5
+│   └── axial_best_model.h5
+├── NSM_MODELS/                  # ✓ Both NSM types available
+│   ├── 647_nsm_femur_v0.0.1/
+│   └── 551_nsm_femur_bone_v0.0.1/
 ├── BSCORE_MODELS/               # ✓ Already included
 │   ├── NSM_Orig_BScore_Bone_Cartilage_April_17_2025/
 │   └── NSM_Orig_BScore_Bone_Only_April_18_2025/
@@ -194,6 +208,13 @@ cd ~/programming/kneepipeline
 
 # Verify config loads
 python -c "import json; c = json.load(open('config.json')); print(f'Model: {c[\"default_seg_model\"]}, Type: {c[\"nnunet\"][\"type\"]}')"
+
+# Verify all model paths exist
+echo "=== Checking Model Paths ===" && \
+test -d ~/programming/kneepipeline/DEPENDENCIES/nnunet_knee_inference/huggingface/models && echo "✓ nnunet models" || echo "✗ nnunet models" && \
+test -f ~/programming/kneepipeline/DOSMA_WEIGHTS/sagittal_best_model.h5 && echo "✓ goyal_sagittal" || echo "✗ goyal_sagittal" && \
+test -f ~/programming/kneepipeline/NSM_MODELS/647_nsm_femur_v0.0.1/model/2000.pth && echo "✓ NSM bone+cart" || echo "✗ NSM bone+cart" && \
+test -f ~/programming/kneepipeline/NSM_MODELS/551_nsm_femur_bone_v0.0.1/model/1150.pth && echo "✓ NSM bone only" || echo "✗ NSM bone only"
 
 # Run nnU-Net inference test
 cd DEPENDENCIES/nnunet_knee_inference
@@ -224,22 +245,6 @@ Stage 3.3 integrates the real pipeline into the web application:
 
 ## Notes
 
-### NSM Models
-
-NSM bone+cartilage model is now downloaded and enabled in config.json.
-
-**Current Status:**
-- ✅ Bone + Cartilage NSM: Downloaded and enabled
-- ❌ Bone-Only NSM: Not available in HuggingFace repo (can be copied manually if needed)
-
-**To disable NSM analysis:**
-```json
-{
-  "perform_bone_and_cart_nsm": false,
-  "perform_bone_only_nsm": false
-}
-```
-
 ### Switching nnU-Net Models
 
 To use cascade instead of fullres (potentially better quality, ~2x slower):
@@ -260,4 +265,9 @@ If you encounter OOM errors, try:
 - Using fullres instead of cascade
 - Clearing GPU memory before running: `torch.cuda.empty_cache()`
 
+### Model Updates
 
+See [../MODEL_WEIGHTS.md](../MODEL_WEIGHTS.md) for instructions on:
+- Downloading models
+- Updating HuggingFace repos
+- Adding new model versions

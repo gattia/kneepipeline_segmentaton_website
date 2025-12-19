@@ -14,25 +14,24 @@ from typing import Optional
 KNEEPIPELINE_PATH = Path(os.getenv("KNEEPIPELINE_PATH", os.path.expanduser("~/programming/kneepipeline")))
 
 # All possible segmentation models (some may not have weights downloaded)
+# Note: "staple" is available in pipeline code but not exposed in UI
 ALL_SEG_MODELS = [
+    "dosma_ananya",  # Goyal 2024 - default, best performance
     "nnunet_fullres",
     "nnunet_cascade",
-    "dosma_ananya",  # Goyal_Bone_Cart_July_2024 combined model
     "goyal_sagittal",
     "goyal_coronal",
     "goyal_axial",
-    "staple",
 ]
 
 # Model weight paths for checking availability
 MODEL_WEIGHT_PATHS = {
+    "dosma_ananya": KNEEPIPELINE_PATH / "DOSMA_WEIGHTS" / "Goyal_Bone_Cart_July_2024_best_model.h5",
     "nnunet_fullres": KNEEPIPELINE_PATH / "DEPENDENCIES" / "nnunet_knee_inference" / "huggingface" / "models",
     "nnunet_cascade": KNEEPIPELINE_PATH / "DEPENDENCIES" / "nnunet_knee_inference" / "huggingface" / "models",
-    "dosma_ananya": KNEEPIPELINE_PATH / "DOSMA_WEIGHTS" / "Goyal_Bone_Cart_July_2024_best_model.h5",
     "goyal_sagittal": KNEEPIPELINE_PATH / "DOSMA_WEIGHTS" / "sagittal_best_model.h5",
     "goyal_coronal": KNEEPIPELINE_PATH / "DOSMA_WEIGHTS" / "coronal_best_model.h5",
     "goyal_axial": KNEEPIPELINE_PATH / "DOSMA_WEIGHTS" / "axial_best_model.h5",
-    "staple": KNEEPIPELINE_PATH / "DOSMA_WEIGHTS" / "sagittal_best_model.h5",  # STAPLE needs all orientation models
 }
 
 

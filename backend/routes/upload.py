@@ -189,7 +189,7 @@ async def get_models_endpoint():
         "segmentation_models": available_models,
         "nsm_types": VALID_NSM_TYPES,
         "defaults": {
-            "segmentation_model": "nnunet_fullres",
+            "segmentation_model": "dosma_ananya",
             "perform_nsm": True,
             "nsm_type": "bone_and_cart",
             "cartilage_smoothing": 0.4,
@@ -200,12 +200,11 @@ async def get_models_endpoint():
             "batch_size": {"min": 1, "max": 256},
         },
         "model_labels": {
-            "nnunet_fullres": "nnU-Net FullRes (recommended)",
+            "dosma_ananya": "Goyal 2024 Sagittal 2D UNet (recommended)",
+            "nnunet_fullres": "nnU-Net FullRes",
             "nnunet_cascade": "nnU-Net Cascade",
-            "dosma_ananya": "DOSMA 2D UNet",
-            "goyal_sagittal": "DOSMA Sagittal",
-            "goyal_coronal": "DOSMA Coronal",
-            "goyal_axial": "DOSMA Axial",
-            "staple": "DOSMA STAPLE (ensemble)",
+            "goyal_sagittal": "Sagittal 2D UNet",
+            "goyal_coronal": "Coronal 2D UNet",
+            "goyal_axial": "Axial 2D UNet",
         },
     }
