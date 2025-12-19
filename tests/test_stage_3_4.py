@@ -634,3 +634,4 @@ class TestSchemaValidation:
         with pytest.raises(ValidationError):
             UploadOptions(batch_size=65)
 
+

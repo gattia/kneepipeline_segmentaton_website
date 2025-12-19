@@ -9,7 +9,9 @@
 #   make run       - Start development server
 
 .PHONY: help install test test-stage-1-1 test-stage-1-2 lint format run worker clean \
-        prod-start prod-stop prod-restart prod-status prod-logs prod-logs-worker prod-logs-web prod-setup
+        prod-start prod-stop prod-restart prod-status prod-logs prod-logs-worker prod-logs-web prod-setup \
+        admin-emails admin-stats admin-times admin-jobs admin-results \
+        admin-emails admin-stats admin-times admin-jobs admin-results
 
 # Default target
 help:
@@ -43,6 +45,13 @@ help:
 	@echo "  make prod-logs      Tail all logs"
 	@echo "  make prod-logs-worker  Tail worker logs only"
 	@echo "  make prod-logs-web     Tail web server logs only"
+	@echo ""
+	@echo "Admin:"
+	@echo "  make admin-emails   List all user email addresses"
+	@echo "  make admin-stats    Show usage statistics"
+	@echo "  make admin-times    Show processing time history"
+	@echo "  make admin-jobs     List jobs with research consent"
+	@echo "  make admin-results  List saved results on disk"
 	@echo ""
 	@echo "Utilities:"
 	@echo "  make clean          Remove cache files"
@@ -210,4 +219,25 @@ prod-logs-worker:
 prod-logs-web:
 	docker logs -f knee-pipeline-web
 
+# =============================================================================
+# Admin Commands
+# =============================================================================
+
+admin-emails:
+	@python admin.py emails
+
+admin-stats:
+	@python admin.py stats
+
+admin-times:
+	@python admin.py times
+
+admin-jobs:
+	@python admin.py jobs
+
+admin-jobs-all:
+	@python admin.py jobs --all
+
+admin-results:
+	@python admin.py results
 

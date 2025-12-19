@@ -232,3 +232,4 @@ def _map_exception_to_code(exception: Exception) -> ErrorCode:
     
     return ErrorCode.PIPELINE_ERROR
 
+

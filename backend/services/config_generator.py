@@ -243,3 +243,4 @@ def get_base_config_path() -> Path:
     """Get the path to the base config.json."""
     return KNEEPIPELINE_PATH / "config.json"
 
+

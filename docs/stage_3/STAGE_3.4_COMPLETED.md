@@ -174,3 +174,4 @@ $ pytest -m stage_3_4 -v
 
 **Stage 3.5: Error Handling and Progress Updates** - See [STAGE_3.5_ERROR_HANDLING.md](./STAGE_3.5_ERROR_HANDLING.md)
 
+

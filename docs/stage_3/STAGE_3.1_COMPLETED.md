@@ -148,3 +148,4 @@ This stage will:
 4. Create `config.json` with correct paths
 5. Test pipeline manually with test image
 
+

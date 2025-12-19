@@ -355,3 +355,4 @@ def run_pipeline_with_progress(
         ''.join(stderr_lines),
     )
 
+

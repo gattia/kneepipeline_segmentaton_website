@@ -324,8 +324,69 @@ Run `make help` to see all available commands:
 | `make prod-stop` | Stop all production services |
 | `make prod-status` | Check status of all services |
 | `make prod-logs` | Tail all logs |
+| **Admin** | |
+| `make admin-emails` | List all user email addresses |
+| `make admin-stats` | Show usage statistics |
+| `make admin-times` | Show processing time history |
+| `make admin-jobs` | List jobs with research consent |
+| `make admin-results` | List saved results on disk |
 | **Utilities** | |
 | `make clean` | Remove cache files |
+
+---
+
+## Admin CLI
+
+The `admin.py` script provides easy access to user data, statistics, and results for administrative tasks.
+
+### Quick Commands
+
+```bash
+# List all user email addresses
+make admin-emails
+python admin.py emails --csv > emails.csv   # Export to CSV
+
+# Show usage statistics
+make admin-stats
+python admin.py stats --json                # Output as JSON
+
+# Show processing time history
+make admin-times
+
+# List jobs with research consent
+make admin-jobs
+python admin.py jobs --all                  # All jobs (not just consented)
+python admin.py jobs --all --json           # Export as JSON
+
+# List saved results on disk
+make admin-results
+
+# Show details for a specific job
+python admin.py job abc123                  # Partial ID works
+python admin.py job abc123 --json           # Output as JSON
+```
+
+### Data Locations
+
+| Data | Storage | Access |
+|------|---------|--------|
+| **User emails** | Redis `user_emails` hash | `make admin-emails` |
+| **Statistics** | Redis (`stats:*` keys) | `make admin-stats` or `/stats` API |
+| **Processing times** | Redis `processing_times` list | `make admin-times` |
+| **Job metadata** | Redis `jobs` hash | `make admin-jobs` |
+| **Results files** | `/mnt/data/knee_pipeline_data/results/` | `make admin-results` |
+
+### Redis Keys Reference
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `user_emails` | Hash | email_hash → email address |
+| `stats:unique_emails` | Set | unique emails (for counting) |
+| `stats:total_processed` | String | all-time job count |
+| `stats:processed:YYYY-MM-DD` | String | daily count (7-day retention) |
+| `processing_times` | List | last 20 processing durations (seconds) |
+| `jobs` | Hash | job_id → job JSON |
+| `job_queue` | Sorted Set | active job queue |
 
 ---
 
